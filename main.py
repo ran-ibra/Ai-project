@@ -4,7 +4,7 @@ import pygame
 import sys
 import math
 
-from miniMaxAlgorithem import *
+from miniMaxAlgorithm import *
 from Board import *
 from Winning import *
 
