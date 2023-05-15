@@ -1,6 +1,6 @@
 import numpy as np
 
-from miniMaxAlgorithem import *
+from miniMaxAlgorithm import *
 from Winning import *
 
 
