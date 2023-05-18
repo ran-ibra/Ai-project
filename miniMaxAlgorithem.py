@@ -72,7 +72,65 @@ def pick_best_move(board, piece):
 def is_terminal_node(board):
     return winning_move(board, PLAYER_PIECE) or winning_move(board, AI_PIECE) or len(get_valid_locations(board)) == 0
 
+#minimax
+def minimax(board, depth, alpha, beta,maximizing_player):
+    valid_locations = get_valid_locations(board)
+    is_terminal = is_terminal_node(board)
+    
+    if depth == 0 or is_terminal:
+        if is_terminal:
+            if winning_move(board, AI_PIECE):
+                return None, 100000000000000
+            elif winning_move(board, PLAYER_PIECE):
+                return None, -10000000000000
+            else:
+                return None, 0
+        else:
+            return None, score_position(board, AI_PIECE)
+    
+    if maximizing_player:
+        value = float('-inf')
+        column = random.choice(valid_locations)
+        
+        for col in valid_locations:
+            row = get_next_open_row(board, col)
+            b_copy = board.copy()
+            putting_peice(b_copy, row, col, AI_PIECE)
+            
+            _, new_score = minimax(b_copy, depth - 1, alpha, beta, False)
+            
+            if new_score > value:
+                value = new_score
+                column = col
+            
+            alpha = max(alpha, value)
+            if alpha >= beta:
+                break
+        
+        return column, value
+    
+    else:
+        value = float('inf')
+        column = random.choice(valid_locations)
+        
+        for col in valid_locations:
+            row = get_next_open_row(board, col)
+            b_copy = board.copy()
+            putting_peice(b_copy, row, col, PLAYER_PIECE)
+            
+            _, new_score = minimax(b_copy, depth - 1, alpha, beta, True)
+            
+            if new_score < value:
+                value = new_score
+                column = col
+            
+            beta = min(beta, value)
+            if alpha >= beta:
+                break
+        
+        return column, value
 
+#alpha-beta
 def miniMaxalgo(board, depth, alpha, beta, maximizingPlayer):
     valid_locations = get_valid_locations(board)
     is_terminal = is_terminal_node(board)
@@ -167,5 +225,3 @@ def score_position(board, piece):
             score += evaluate_window(window, piece)
 
     return score
-
-
