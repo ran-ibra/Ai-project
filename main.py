@@ -2,11 +2,13 @@ import numpy as np
 import random
 import pygame
 import sys
-import math
+import math,time
+import matplotlib.pyplot as plt
 
 from miniMaxAlgorithm import *
 from Board import *
 from Winning import *
+from Compare import *
 
 
 PLAYER = 0
@@ -21,6 +23,12 @@ YELLOW = (255, 255, 0)
 ROW_COUNT = 6
 COLUMN_COUNT = 7
 WINDOW_LENGTH = 4
+
+minimax_execution_times = []
+alpha_beta_execution_times = []
+
+minimax_node_evaluations = []
+alpha_beta_node_evaluations = []
 
 board = formBord()
 showgame(board)
@@ -43,7 +51,7 @@ pygame.display.update()
 
 myfont = pygame.font.SysFont("monospace", 75)
 
-turn = random.randint(PLAYER, AI)
+turn = random.choice([AI,PLAYER])
 
 while not game_over:
 
@@ -54,35 +62,42 @@ while not game_over:
         if event.type == pygame.MOUSEMOTION:
             pygame.draw.rect(screen, BLACK, (0, 0, width, SQUARESIZE))
             posx = event.pos[0]
-            if turn == PLAYER:
-                pygame.draw.circle(screen, RED, (posx, int(SQUARESIZE / 2)), RADIUS)
 
         pygame.display.update()
 
         if turn == PLAYER:
-            pygame.draw.rect(screen, BLACK, (0, 0, width, SQUARESIZE))
 
-            if turn == PLAYER:
-                col = pick_best_move(board, PLAYER_PIECE)
+            start_time = time.time()
+            col, minimax_score = minimax(board, 5, -math.inf, math.inf, True)
+            end_time = time.time()
+            execution_time = end_time - start_time
+            minimax_execution_times.append(execution_time)
+            minimax_node_evaluations.append(score_position(board, PLAYER_PIECE))
 
-                if is_valid_location(board, col):
-                    row = get_next_open_row(board, col)
-                    putting_peice(board, row, col, PLAYER_PIECE)
+            if is_valid_location(board, col):
+                row = get_next_open_row(board, col)
+                putting_peice(board, row, col, PLAYER_PIECE)
 
-                    if winning_move(board, PLAYER_PIECE):
-                        label = myfont.render("Player 1 wins!!", 1, RED)
-                        screen.blit(label, (40, 10))
-                        game_over = True
+                if winning_move(board, PLAYER_PIECE):
+                    label = myfont.render("Player 1 wins!!", 1, RED)
+                    screen.blit(label, (40, 10))
+                    game_over = True
+                    compare(minimax_execution_times,alpha_beta_execution_times,minimax_node_evaluations,alpha_beta_node_evaluations)
 
-                    turn += 1
-                    turn = turn % 2
+                showgame(board)
+                draw_board(board , SQUARESIZE , height, RADIUS, screen)
 
-                    showgame(board)
-                    draw_board(board , SQUARESIZE , height, RADIUS, screen)
-
+                turn += 1
+                turn = turn % 2
+                
     if turn == AI and not game_over:
 
+        start_time = time.time()
         col, minimax_score = miniMaxalgo(board, 5, -math.inf, math.inf, True)
+        end_time = time.time()
+        execution_time = end_time - start_time
+        alpha_beta_execution_times.append(execution_time)
+        alpha_beta_node_evaluations.append(score_position(board, AI_PIECE))
 
         if is_valid_location(board, col):
             row = get_next_open_row(board, col)
@@ -92,6 +107,7 @@ while not game_over:
                 label = myfont.render("Player 2 wins!!", 1, YELLOW)
                 screen.blit(label, (40, 10))
                 game_over = True
+                compare(minimax_execution_times,alpha_beta_execution_times,minimax_node_evaluations,alpha_beta_node_evaluations)
 
             showgame(board)
             draw_board(board , SQUARESIZE , height, RADIUS, screen)
